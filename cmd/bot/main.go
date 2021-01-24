@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -23,15 +23,13 @@ func main() {
 	config.OutputPaths = []string{"stdout"}
 	zapLogger, err := config.Build()
 	if err != nil {
-		fmt.Println("failed to init logger: ", err)
-		os.Exit(1)
+		log.Fatal("failed to init logger: ", err)
 	}
 	zap.ReplaceGlobals(zapLogger)
 
 	var botFlags botFlags
 	if err := env.Parse(&botFlags); err != nil {
-		fmt.Println("failed to parse bot flags: ", err)
-		os.Exit(1)
+		log.Fatal("failed to parse bot flags: ", err)
 	}
 
 	bot, err := createBot(botFlags, processor.New())

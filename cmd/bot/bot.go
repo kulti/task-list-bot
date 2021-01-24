@@ -33,7 +33,7 @@ func createBot(opts botFlags, msgProcessor msgProcessor) (*bot, error) {
 	b, err := tgbotapi.NewBotAPIWithClient(opts.Token, httpClient)
 	if err != nil {
 		cancelFn()
-		return nil, err
+		return nil, err //nolint:wrapcheck // single error returns (https://github.com/tomarrell/wrapcheck/issues/1)
 	}
 
 	b.Debug = opts.Debug
@@ -76,8 +76,10 @@ func (b *bot) processUpdates() {
 			if errors.Is(err, context.Canceled) {
 				return
 			}
+
+			const retryInterval = 3 * time.Second
 			zap.L().Warn("Failed to get updates, retrying in 3 seconds...", zap.Error(err))
-			time.Sleep(time.Second * 3)
+			time.Sleep(retryInterval)
 			continue
 		}
 
@@ -116,6 +118,7 @@ func (b *bot) processUpdate(update tgbotapi.Update) {
 	}
 }
 
+//nolint:lll // because it is message template
 const unknownOwnerMessage = `Hi!
 
 I'm not talking with strangers. Only the creator can talk with me.
