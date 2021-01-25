@@ -21,6 +21,6 @@ repos:
         pass_filenames: false
       - id: go-generate
         name: go generate
-        entry: ./scripts/check_go_generated.sh
+        entry: go generate ./...
         language: system
         pass_filenames: false

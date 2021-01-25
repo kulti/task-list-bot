@@ -108,6 +108,11 @@ func (b *bot) processUpdate(update tgbotapi.Update) {
 		return
 	}
 
+	if msg.Text == "" {
+		zap.L().Warn("ignore empty message")
+		return
+	}
+
 	respMsg := b.msgProcessor.Process(msg.Text)
 	if respMsg != "" {
 		msg := tgbotapi.NewMessage(msg.Chat.ID, respMsg)

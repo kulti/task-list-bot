@@ -10,5 +10,9 @@ func New() *Processor {
 
 // Process processes input message.
 func (s *Processor) Process(msg string) string {
+	if len(msg) == 0 {
+		panic("empty message are not allowed")
+	}
+
 	return msg
 }
