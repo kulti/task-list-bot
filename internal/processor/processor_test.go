@@ -34,6 +34,19 @@ func (s *ProcessorSuite) TestCreateSprint() {
 	s.Require().Equal(sprintHeader, resp)
 }
 
+func (s *ProcessorSuite) TestCreateSprintInvalidFormat() {
+	tests := []string{
+		"01.02 -", "- 02.03", "a.04 - 05.06", "07.b - 08.09", "10.11 - c.12", "", "13.01 - 14.d",
+	}
+	for _, tc := range tests {
+		tc := tc
+		s.Run(tc, func() {
+			resp := s.processor.Process("/ns " + tc)
+			s.Require().Equal("Invalid format of new sprint. Should be `DD.MM - DD.MM` (e.g. `01.12 - 07.12`)", resp)
+		})
+	}
+}
+
 func (s *ProcessorSuite) timeToSprintDate(d time.Time) string {
 	return fmt.Sprintf("%02d.%02d", d.Day(), d.Month())
 }
