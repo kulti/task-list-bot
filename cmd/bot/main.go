@@ -10,6 +10,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/kulti/task-list-bot/internal/processor"
+	"github.com/kulti/task-list-bot/internal/repository"
 )
 
 type botFlags struct {
@@ -32,7 +33,7 @@ func main() {
 		log.Fatal("failed to parse bot flags: ", err)
 	}
 
-	bot, err := createBot(botFlags, processor.New())
+	bot, err := createBot(botFlags, processor.New(repository.New()))
 	if err != nil {
 		zap.L().Fatal("failed to create bot", zap.Error(err))
 	}
