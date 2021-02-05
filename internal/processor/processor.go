@@ -6,14 +6,23 @@ import (
 	"time"
 
 	"github.com/cabify/timex"
+	"go.uber.org/zap"
 )
 
+type repository interface {
+	CreateNewSprint(begin, end time.Time) error
+}
+
 // Processor is a telemgram message processor.
-type Processor struct{}
+type Processor struct {
+	repo repository
+}
 
 // New creates a new instance of Processor.
-func New() *Processor {
-	return &Processor{}
+func New(repo repository) *Processor {
+	return &Processor{
+		repo: repo,
+	}
 }
 
 // Process processes input message.
@@ -37,19 +46,26 @@ func (p *Processor) processCommand(msg string) string {
 
 	cmd := msgSplitted[0]
 	params := msgSplitted[1]
+	logger := zap.L().With(zap.String("cmd", cmd))
+
 	if cmd == "/ns" {
-		return p.processNewSprint(params)
+		return p.processNewSprint(logger, params)
 	}
 
 	return ""
 }
 
-func (p *Processor) processNewSprint(params string) string {
-	_, _, ok := p.parseBeginEnd(params)
+func (p *Processor) processNewSprint(logger *zap.Logger, params string) string {
+	begin, end, ok := p.parseBeginEnd(params)
 	if !ok {
 		return "Invalid format of new sprint. Should be `DD.MM - DD.MM` (e.g. `01.12 - 07.12`)"
 	}
 
+	err := p.repo.CreateNewSprint(begin, end)
+	if err != nil {
+		logger.Warn("failed to create new sprint", zap.Error(err))
+		return "Oops! Failed to create new sprint. Try later."
+	}
 	return params
 }
 

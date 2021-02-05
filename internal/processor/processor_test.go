@@ -1,23 +1,35 @@
 package processor_test
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 	"testing"
 	"time"
 
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/kulti/task-list-bot/internal/processor"
 )
 
+var errTestNewSprint = errors.New("test: failed to store sprint")
+
 type ProcessorSuite struct {
 	suite.Suite
-	processor *processor.Processor
+	mockCtrl       *gomock.Controller
+	mockRepository *MockRepository
+	processor      *processor.Processor
 }
 
 func (s *ProcessorSuite) SetupTest() {
-	s.processor = processor.New()
+	s.mockCtrl = gomock.NewController(s.T())
+	s.mockRepository = NewMockRepository(s.mockCtrl)
+	s.processor = processor.New(s.mockRepository)
+}
+
+func (s *ProcessorSuite) TearDownTest() {
+	s.mockCtrl.Finish()
 }
 
 func (s *ProcessorSuite) TestEmptyMessage() {
@@ -26,8 +38,10 @@ func (s *ProcessorSuite) TestEmptyMessage() {
 
 func (s *ProcessorSuite) TestCreateSprint() {
 	const timeDay = 24 * time.Hour
-	begin := time.Unix(time.Now().Unix()-rand.Int63n(5000)+rand.Int63n(5000), 0).Truncate(timeDay)
+	begin := time.Unix(time.Now().Unix()-rand.Int63n(5000)+rand.Int63n(5000), 0).UTC().Truncate(timeDay)
 	end := begin.Add(7 * timeDay)
+
+	s.mockRepository.EXPECT().CreateNewSprint(begin, end)
 
 	sprintHeader := fmt.Sprintf("%s - %s", s.timeToSprintDate(begin), s.timeToSprintDate(end))
 	resp := s.processor.Process("/ns " + sprintHeader)
@@ -45,6 +59,12 @@ func (s *ProcessorSuite) TestCreateSprintInvalidFormat() {
 			s.Require().Equal("Invalid format of new sprint. Should be `DD.MM - DD.MM` (e.g. `01.12 - 07.12`)", resp)
 		})
 	}
+}
+
+func (s *ProcessorSuite) TestCreateSprintFailedToStore() {
+	s.mockRepository.EXPECT().CreateNewSprint(gomock.Any(), gomock.Any()).Return(errTestNewSprint)
+	resp := s.processor.Process("/ns 01.02 - 03.04")
+	s.Require().Equal("Oops! Failed to create new sprint. Try later.", resp)
 }
 
 func (s *ProcessorSuite) timeToSprintDate(d time.Time) string {
