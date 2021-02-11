@@ -6,6 +6,7 @@ package processor_test
 
 import (
 	gomock "github.com/golang/mock/gomock"
+	models "github.com/kulti/task-list-bot/internal/models"
 	reflect "reflect"
 	time "time"
 )
@@ -33,6 +34,21 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 	return m.recorder
 }
 
+// CurrentSprint mocks base method
+func (m *MockRepository) CurrentSprint() (models.TaskList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CurrentSprint")
+	ret0, _ := ret[0].(models.TaskList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CurrentSprint indicates an expected call of CurrentSprint
+func (mr *MockRepositoryMockRecorder) CurrentSprint() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CurrentSprint", reflect.TypeOf((*MockRepository)(nil).CurrentSprint))
+}
+
 // CreateNewSprint mocks base method
 func (m *MockRepository) CreateNewSprint(begin, end time.Time) error {
 	m.ctrl.T.Helper()
@@ -45,4 +61,18 @@ func (m *MockRepository) CreateNewSprint(begin, end time.Time) error {
 func (mr *MockRepositoryMockRecorder) CreateNewSprint(begin, end interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNewSprint", reflect.TypeOf((*MockRepository)(nil).CreateNewSprint), begin, end)
+}
+
+// CreateTask mocks base method
+func (m *MockRepository) CreateTask(text string, points int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateTask", text, points)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateTask indicates an expected call of CreateTask
+func (mr *MockRepositoryMockRecorder) CreateTask(text, points interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTask", reflect.TypeOf((*MockRepository)(nil).CreateTask), text, points)
 }

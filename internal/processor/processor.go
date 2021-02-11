@@ -1,16 +1,21 @@
 package processor
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/cabify/timex"
 	"go.uber.org/zap"
+
+	"github.com/kulti/task-list-bot/internal/models"
 )
 
 type repository interface {
+	CurrentSprint() (models.TaskList, error)
 	CreateNewSprint(begin, end time.Time) error
+	CreateTask(text string, points int) error
 }
 
 // Processor is a telemgram message processor.
@@ -34,7 +39,36 @@ func (p *Processor) Process(msg string) string {
 	if msg[0] == '/' {
 		return p.processCommand(msg)
 	}
-	return msg
+	return p.processNewTask(msg)
+}
+
+func (p *Processor) processNewTask(msg string) string {
+	msgSplitted := strings.Split(msg, " ")
+
+	task := msg
+	points := 1
+	if len(msgSplitted) > 1 {
+		parsedPoints, err := strconv.Atoi(msgSplitted[0])
+		if err == nil {
+			task = strings.Join(msgSplitted[1:], " ")
+			points = parsedPoints
+		} else {
+			parsedPoints, err := strconv.Atoi(msgSplitted[len(msgSplitted)-1])
+			if err == nil {
+				task = strings.Join(msgSplitted[:len(msgSplitted)-1], " ")
+				points = parsedPoints
+			}
+		}
+	}
+
+	logger := zap.L().With(zap.String("msg", msg))
+	err := p.repo.CreateTask(task, points)
+	if err != nil {
+		logger.Warn("failed to create new task", zap.Error(err))
+		return "Oops! Failed to create new task. Try later."
+	}
+
+	return p.fullTaskList(logger)
 }
 
 func (p *Processor) processCommand(msg string) string {
@@ -66,7 +100,32 @@ func (p *Processor) processNewSprint(logger *zap.Logger, params string) string {
 		logger.Warn("failed to create new sprint", zap.Error(err))
 		return "Oops! Failed to create new sprint. Try later."
 	}
-	return params
+	return p.fullTaskList(logger)
+}
+
+func (p *Processor) fullTaskList(logger *zap.Logger) string {
+	taskList, err := p.repo.CurrentSprint()
+	if err != nil {
+		logger.Warn("failed to read current sprint", zap.Error(err))
+		return "Oops! Failed to load current task list. Try later."
+	}
+
+	if taskList.Title == "" {
+		taskList.Title = "no sprint"
+	}
+
+	b := strings.Builder{}
+	b.WriteString(taskList.Title)
+	b.WriteByte('\n')
+	for _, t := range taskList.Tasks {
+		b.WriteString(strconv.Itoa(t.ID))
+		b.WriteByte(' ')
+		b.WriteString(fmt.Sprintf("(%d/%d)", t.Burnt, t.Points))
+		b.WriteByte(' ')
+		b.WriteString(t.Text)
+		b.WriteByte('\n')
+	}
+	return b.String()
 }
 
 func (p *Processor) parseBeginEnd(s string) (time.Time, time.Time, bool) {

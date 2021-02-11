@@ -1,13 +1,36 @@
 package repository
 
-import "time"
+import (
+	"fmt"
+	"time"
 
-type Store struct{}
+	"github.com/kulti/task-list-bot/internal/models"
+)
+
+type Store struct {
+	tasks models.TaskList
+}
 
 func New() *Store {
 	return &Store{}
 }
 
-func (*Store) CreateNewSprint(begin, end time.Time) error {
+func (s *Store) CreateNewSprint(begin, end time.Time) error {
+	s.tasks.Title = fmt.Sprintf("%s - %s", s.timeToSprintDate(begin), s.timeToSprintDate(end))
+	s.tasks.Tasks = nil
 	return nil
+}
+
+func (s *Store) CreateTask(text string, points int) error {
+	id := len(s.tasks.Tasks)
+	s.tasks.Tasks = append(s.tasks.Tasks, models.Task{ID: id, Text: text, Points: points})
+	return nil
+}
+
+func (s *Store) CurrentSprint() (models.TaskList, error) {
+	return s.tasks, nil
+}
+
+func (s *Store) timeToSprintDate(d time.Time) string {
+	return fmt.Sprintf("%02d.%02d", d.Day(), d.Month())
 }

@@ -4,16 +4,25 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"strconv"
 	"testing"
 	"time"
 
+	"github.com/bxcodec/faker/v3"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/suite"
 
+	"github.com/kulti/task-list-bot/internal/models"
 	"github.com/kulti/task-list-bot/internal/processor"
 )
 
-var errTestNewSprint = errors.New("test: failed to store sprint")
+const noSprintTemplate = "no sprint\n"
+
+var (
+	errTestNewSprint   = errors.New("test: failed to store sprint")
+	errTestNewTask     = errors.New("test: failed to create task")
+	errTestCurrentList = errors.New("test: failed to list tasks")
+)
 
 type ProcessorSuite struct {
 	suite.Suite
@@ -42,10 +51,11 @@ func (s *ProcessorSuite) TestCreateSprint() {
 	end := begin.Add(7 * timeDay)
 
 	s.mockRepository.EXPECT().CreateNewSprint(begin, end)
+	s.mockRepository.EXPECT().CurrentSprint()
 
 	sprintHeader := fmt.Sprintf("%s - %s", s.timeToSprintDate(begin), s.timeToSprintDate(end))
 	resp := s.processor.Process("/ns " + sprintHeader)
-	s.Require().Equal(sprintHeader, resp)
+	s.Require().Equal(noSprintTemplate, resp)
 }
 
 func (s *ProcessorSuite) TestCreateSprintInvalidFormat() {
@@ -69,6 +79,69 @@ func (s *ProcessorSuite) TestCreateSprintFailedToStore() {
 
 func (s *ProcessorSuite) timeToSprintDate(d time.Time) string {
 	return fmt.Sprintf("%02d.%02d", d.Day(), d.Month())
+}
+
+func (s *ProcessorSuite) TestAddNewTask() {
+	s.Run("without points", func() {
+		msg := faker.Sentence()
+		s.mockRepository.EXPECT().CreateTask(msg, 1)
+		s.mockRepository.EXPECT().CurrentSprint()
+
+		resp := s.processor.Process(msg)
+		s.Require().Equal(noSprintTemplate, resp)
+	})
+
+	s.Run("with points at begin", func() {
+		msg := faker.Sentence()
+		points := rand.Int()
+		s.mockRepository.EXPECT().CreateTask(msg, points)
+		s.mockRepository.EXPECT().CurrentSprint()
+
+		resp := s.processor.Process(strconv.Itoa(points) + " " + msg)
+		s.Require().Equal(noSprintTemplate, resp)
+	})
+
+	s.Run("with points at end", func() {
+		msg := faker.Sentence()
+		points := rand.Int()
+		s.mockRepository.EXPECT().CreateTask(msg, points)
+		s.mockRepository.EXPECT().CurrentSprint()
+
+		resp := s.processor.Process(msg + " " + strconv.Itoa(points))
+		s.Require().Equal(noSprintTemplate, resp)
+	})
+}
+
+func (s *ProcessorSuite) TestAddNewTaskError() {
+	s.mockRepository.EXPECT().CreateTask(gomock.Any(), gomock.Any()).Return(errTestNewTask)
+
+	resp := s.processor.Process(faker.Sentence())
+	s.Require().Equal("Oops! Failed to create new task. Try later.", resp)
+}
+
+func (s *ProcessorSuite) TestCurrentTaskList() {
+	taskList := models.TaskList{
+		Title: "test title",
+		Tasks: []models.Task{
+			{ID: 0, Text: "task 7", Points: 7},
+			{ID: 1, Text: "burnt task", Points: 3, Burnt: 2},
+		},
+	}
+	s.mockRepository.EXPECT().CreateNewSprint(gomock.Any(), gomock.Any())
+	s.mockRepository.EXPECT().CurrentSprint().Return(taskList, nil)
+
+	resp := s.processor.Process("/ns 01.01 - 02.01")
+	s.Require().Equal(`test title
+0 (0/7) task 7
+1 (2/3) burnt task
+`, resp)
+}
+
+func (s *ProcessorSuite) TestCurrentTaskListError() {
+	s.mockRepository.EXPECT().CreateNewSprint(gomock.Any(), gomock.Any())
+	s.mockRepository.EXPECT().CurrentSprint().Return(models.TaskList{}, errTestCurrentList)
+	resp := s.processor.Process("/ns 01.01 - 02.01")
+	s.Require().Equal("Oops! Failed to load current task list. Try later.", resp)
 }
 
 func TestProcessorSuite(t *testing.T) {
