@@ -21,6 +21,7 @@ const noSprintTemplate = "no sprint\n"
 var (
 	errTestNewSprint   = errors.New("test: failed to store sprint")
 	errTestNewTask     = errors.New("test: failed to create task")
+	errTestDoneTask    = errors.New("test: failed to done task")
 	errTestCurrentList = errors.New("test: failed to list tasks")
 )
 
@@ -117,6 +118,28 @@ func (s *ProcessorSuite) TestAddNewTaskError() {
 
 	resp := s.processor.Process(faker.Sentence())
 	s.Require().Equal("Oops! Failed to create new task. Try later.", resp)
+}
+
+func (s *ProcessorSuite) TestDoneTask() {
+	id := rand.Int()
+	task := faker.Sentence()
+	s.mockRepository.EXPECT().DoneTask(id).Return(task, nil)
+	s.mockRepository.EXPECT().CurrentSprint()
+
+	resp := s.processor.Process("/d " + strconv.Itoa(id))
+	s.Require().Equal(fmt.Sprintf("The task %q is marked as done.\n\n%s", task, noSprintTemplate), resp)
+}
+
+func (s *ProcessorSuite) TestDoneTaskInvalidID() {
+	resp := s.processor.Process("/d id")
+	s.Require().Equal("Task id should be a number.", resp)
+}
+
+func (s *ProcessorSuite) TestDoneTaskError() {
+	s.mockRepository.EXPECT().DoneTask(gomock.Any()).Return("", errTestDoneTask)
+
+	resp := s.processor.Process("/d 1")
+	s.Require().Equal("Oops! Failed to done task. Try later.", resp)
 }
 
 func (s *ProcessorSuite) TestCurrentTaskList() {

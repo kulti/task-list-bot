@@ -20,8 +20,8 @@ type TaskState string
 
 // TaskState constants.
 const (
-	TaskStateSimple    TaskState = ""
-	TaskStateTodo      TaskState = "todo"
-	TaskStateCompleted TaskState = "done"
-	TaskStateCanceled  TaskState = "canceled"
+	TaskStateSimple   TaskState = ""
+	TaskStateTodo     TaskState = "todo"
+	TaskStateDone     TaskState = "done"
+	TaskStateCanceled TaskState = "canceled"
 )

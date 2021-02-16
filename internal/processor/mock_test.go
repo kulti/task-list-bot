@@ -76,3 +76,18 @@ func (mr *MockRepositoryMockRecorder) CreateTask(text, points interface{}) *gomo
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateTask", reflect.TypeOf((*MockRepository)(nil).CreateTask), text, points)
 }
+
+// DoneTask mocks base method
+func (m *MockRepository) DoneTask(id int) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DoneTask", id)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DoneTask indicates an expected call of DoneTask
+func (mr *MockRepositoryMockRecorder) DoneTask(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DoneTask", reflect.TypeOf((*MockRepository)(nil).DoneTask), id)
+}

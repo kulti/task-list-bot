@@ -16,6 +16,7 @@ type repository interface {
 	CurrentSprint() (models.TaskList, error)
 	CreateNewSprint(begin, end time.Time) error
 	CreateTask(text string, points int) error
+	DoneTask(id int) (string, error)
 }
 
 // Processor is a telemgram message processor.
@@ -82,8 +83,11 @@ func (p *Processor) processCommand(msg string) string {
 	params := msgSplitted[1]
 	logger := zap.L().With(zap.String("cmd", cmd))
 
-	if cmd == "/ns" {
+	switch cmd {
+	case "/ns":
 		return p.processNewSprint(logger, params)
+	case "/d":
+		return p.processDoneTask(logger, params)
 	}
 
 	return ""
@@ -101,6 +105,21 @@ func (p *Processor) processNewSprint(logger *zap.Logger, params string) string {
 		return "Oops! Failed to create new sprint. Try later."
 	}
 	return p.fullTaskList(logger)
+}
+
+func (p *Processor) processDoneTask(logger *zap.Logger, params string) string {
+	id, err := strconv.Atoi(params)
+	if err != nil {
+		return "Task id should be a number."
+	}
+
+	task, err := p.repo.DoneTask(id)
+	if err != nil {
+		return "Oops! Failed to done task. Try later."
+	}
+
+	taskList := p.fullTaskList(logger)
+	return fmt.Sprintf("The task %q is marked as done.\n\n%s", task, taskList)
 }
 
 func (p *Processor) fullTaskList(logger *zap.Logger) string {
