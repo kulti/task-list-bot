@@ -27,6 +27,16 @@ func (s *Store) CreateTask(text string, points int) error {
 	return nil
 }
 
+func (s *Store) DoneTask(id int) (string, error) {
+	if id >= len(s.tasks.Tasks) {
+		return "", models.ErrTaskNotFound
+	}
+
+	s.tasks.Tasks[id].State = models.TaskStateDone
+
+	return s.tasks.Tasks[id].Text, nil
+}
+
 func (s *Store) CurrentSprint() (models.TaskList, error) {
 	return s.tasks, nil
 }
