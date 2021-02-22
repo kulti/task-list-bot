@@ -12,7 +12,7 @@ import (
 	"github.com/kulti/task-list-bot/internal/models"
 )
 
-type repository interface {
+type store interface {
 	CurrentSprint() (models.TaskList, error)
 	CreateNewSprint(begin, end time.Time) error
 	CreateTask(text string, points int) error
@@ -21,13 +21,13 @@ type repository interface {
 
 // Processor is a telemgram message processor.
 type Processor struct {
-	repo repository
+	store store
 }
 
 // New creates a new instance of Processor.
-func New(repo repository) *Processor {
+func New(store store) *Processor {
 	return &Processor{
-		repo: repo,
+		store: store,
 	}
 }
 
@@ -63,7 +63,7 @@ func (p *Processor) processNewTask(msg string) string {
 	}
 
 	logger := zap.L().With(zap.String("msg", msg))
-	err := p.repo.CreateTask(task, points)
+	err := p.store.CreateTask(task, points)
 	if err != nil {
 		logger.Warn("failed to create new task", zap.Error(err))
 		return "Oops! Failed to create new task. Try later."
@@ -99,7 +99,7 @@ func (p *Processor) processNewSprint(logger *zap.Logger, params string) string {
 		return "Invalid format of new sprint. Should be `DD.MM - DD.MM` (e.g. `01.12 - 07.12`)"
 	}
 
-	err := p.repo.CreateNewSprint(begin, end)
+	err := p.store.CreateNewSprint(begin, end)
 	if err != nil {
 		logger.Warn("failed to create new sprint", zap.Error(err))
 		return "Oops! Failed to create new sprint. Try later."
@@ -113,7 +113,7 @@ func (p *Processor) processDoneTask(logger *zap.Logger, params string) string {
 		return "Task id should be a number."
 	}
 
-	task, err := p.repo.DoneTask(id)
+	task, err := p.store.DoneTask(id)
 	if err != nil {
 		return "Oops! Failed to done task. Try later."
 	}
@@ -123,7 +123,7 @@ func (p *Processor) processDoneTask(logger *zap.Logger, params string) string {
 }
 
 func (p *Processor) fullTaskList(logger *zap.Logger) string {
-	taskList, err := p.repo.CurrentSprint()
+	taskList, err := p.store.CurrentSprint()
 	if err != nil {
 		logger.Warn("failed to read current sprint", zap.Error(err))
 		return "Oops! Failed to load current task list. Try later."
