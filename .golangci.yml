@@ -1,83 +1,21 @@
 run:
   timeout: 1m
-  skip-dirs:
-    - generated
-    - vendor
 
 linters:
-  disable-all: true
-  enable:
-    - asciicheck
-    - bodyclose
-    - deadcode
-    - depguard
-    - dogsled
-    - dupl
-    - errcheck
-    - errorlint
-    # - exhaustive
-    # - exhaustivestruct
-    - exportloopref
-    - forbidigo
-    - funlen
-    - gci
-    - gochecknoglobals
-    - gochecknoinits
-    - gocognit
-    - goconst
-    - gocritic
-    - gocyclo
-    - godot
-    # - godox
-    - goerr113
-    - gofmt
-    - gofumpt
-    - goheader
-    - goimports
-    - golint
-    - gomnd
-    - gomodguard
-    - goprintffuncname
-    - gosec
-    - gosimple
-    - govet
-    - ineffassign
-    - interfacer
-    - lll
-    - makezero
-    - maligned
-    - misspell
-    - nakedret
-    - nestif
-    # - nlreturn # not good for short functions (https://github.com/ssgreg/nlreturn/issues/6)
-    - noctx
-    - nolintlint
-    - paralleltest
-    - prealloc
-    - predeclared
-    - rowserrcheck
-    - scopelint
-    - sqlclosecheck
-    - staticcheck
-    - structcheck
-    - stylecheck
-    - testpackage
-    - tparallel
-    - thelper
-    - typecheck
-    - unconvert
-    - unparam
-    - unused
-    - varcheck
-    - whitespace
-    - wrapcheck
-    # - wsl # strange suggestions for me.
+  enable-all: true
+  disable:
+    - exhaustivestruct # has a lot of false-positive, because default zero value is not bad
+    - nlreturn # not good for short functions (https://github.com/ssgreg/nlreturn/issues/6)
+    - wsl # strange suggestions for me.
 
 linters-settings:
   lll:
     line-length: 110
   gci:
     local-prefixes: github.com/kulti/task-list-bot
+  nolintlint:
+    require-explanation: true
+    require-specific: true
 
 issues:
   exclude-rules:
@@ -86,7 +24,7 @@ issues:
         - gosec # security is not make sense in tests
         - noctx # it's ok to do simple http request without context in tests
 
-    # Exclude lll issues for long lines with go:generate
+    # go:generate lines can be realy long
     - linters:
         - lll
       source: "^//go:generate "
