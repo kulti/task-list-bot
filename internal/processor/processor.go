@@ -130,7 +130,7 @@ func (p *Processor) fullTaskList(logger *zap.Logger) string {
 	}
 
 	if taskList.Title == "" {
-		taskList.Title = "no sprint"
+		return "no sprint"
 	}
 
 	b := strings.Builder{}
