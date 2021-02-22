@@ -16,7 +16,7 @@ import (
 	"github.com/kulti/task-list-bot/internal/processor"
 )
 
-const noSprintTemplate = "no sprint\n"
+const noSprintTemplate = "no sprint"
 
 var (
 	errTestNewSprint   = errors.New("test: failed to store sprint")
