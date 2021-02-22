@@ -16,14 +16,16 @@ func New() *Store {
 }
 
 func (s *Store) CreateNewSprint(begin, end time.Time) error {
-	s.tasks.Title = fmt.Sprintf("%s - %s", s.timeToSprintDate(begin), s.timeToSprintDate(end))
-	s.tasks.Tasks = nil
+	s.tasks = models.TaskList{
+		Title: fmt.Sprintf("%s - %s", s.timeToSprintDate(begin), s.timeToSprintDate(end)),
+	}
 	return nil
 }
 
 func (s *Store) CreateTask(text string, points int) error {
 	id := len(s.tasks.Tasks)
-	s.tasks.Tasks = append(s.tasks.Tasks, models.Task{ID: id, Text: text, Points: points})
+	s.tasks.Tasks = append(s.tasks.Tasks, models.Task{ID: id, Text: text, Points: models.Points{Total: points}})
+	s.tasks.Points.Total += points
 	return nil
 }
 
@@ -32,7 +34,11 @@ func (s *Store) DoneTask(id int) (string, error) {
 		return "", models.ErrTaskNotFound
 	}
 
+	task := s.tasks.Tasks[id]
+	s.tasks.Points.Burnt += task.Points.Total - task.Points.Burnt
+
 	s.tasks.Tasks[id].State = models.TaskStateDone
+	s.tasks.Tasks[id].Points.Burnt = task.Points.Total
 
 	return s.tasks.Tasks[id].Text, nil
 }

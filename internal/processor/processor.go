@@ -136,10 +136,16 @@ func (p *Processor) fullTaskList(logger *zap.Logger) string {
 	b := strings.Builder{}
 	b.WriteString(taskList.Title)
 	b.WriteByte('\n')
+
+	b.WriteString("Total ")
+	b.WriteString(taskList.Points.String())
+	b.WriteByte('\n')
+	b.WriteByte('\n')
+
 	for _, t := range taskList.Tasks {
 		b.WriteString(strconv.Itoa(t.ID))
 		b.WriteByte(' ')
-		b.WriteString(fmt.Sprintf("(%d/%d)", t.Burnt, t.Points))
+		b.WriteString(t.Points.String())
 		b.WriteByte(' ')
 		b.WriteString(t.Text)
 		b.WriteByte('\n')

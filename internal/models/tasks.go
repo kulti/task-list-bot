@@ -1,9 +1,12 @@
 package models
 
+import "fmt"
+
 // TaskList represents a task list.
 type TaskList struct {
-	Title string
-	Tasks []Task
+	Title  string
+	Points Points
+	Tasks  []Task
 }
 
 // Task represents a task.
@@ -11,8 +14,17 @@ type Task struct {
 	ID     int
 	Text   string
 	State  TaskState
-	Points int
-	Burnt  int
+	Points Points
+}
+
+// Points represents progress points.
+type Points struct {
+	Burnt int
+	Total int
+}
+
+func (p Points) String() string {
+	return fmt.Sprintf("(%d/%d)", p.Burnt, p.Total)
 }
 
 // TaskState reprensts a task state.

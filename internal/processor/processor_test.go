@@ -144,10 +144,11 @@ func (s *ProcessorSuite) TestDoneTaskError() {
 
 func (s *ProcessorSuite) TestCurrentTaskList() {
 	taskList := models.TaskList{
-		Title: "test title",
+		Title:  "test title",
+		Points: models.Points{Burnt: 2, Total: 10},
 		Tasks: []models.Task{
-			{ID: 0, Text: "task 7", Points: 7},
-			{ID: 1, Text: "burnt task", Points: 3, Burnt: 2},
+			{ID: 0, Text: "task 7", Points: models.Points{Total: 7}},
+			{ID: 1, Text: "burnt task", Points: models.Points{Burnt: 2, Total: 3}},
 		},
 	}
 	s.mockRepository.EXPECT().CreateNewSprint(gomock.Any(), gomock.Any())
@@ -155,6 +156,8 @@ func (s *ProcessorSuite) TestCurrentTaskList() {
 
 	resp := s.processor.Process("/ns 01.01 - 02.01")
 	s.Require().Equal(`test title
+Total (2/10)
+
 0 (0/7) task 7
 1 (2/3) burnt task
 `, resp)
