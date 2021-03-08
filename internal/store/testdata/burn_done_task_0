@@ -1,0 +1,114 @@
+[
+    {
+        "Description": "Init burn test",
+        "Points": {
+            "Burnt": 2,
+            "Total": 7
+        },
+        "Tasks": [
+            {
+                "ID": 0,
+                "Points": {
+                    "Burnt": 2,
+                    "Total": 6
+                },
+                "State": "",
+                "Text": "task 0"
+            },
+            {
+                "ID": 1,
+                "Points": {
+                    "Burnt": 0,
+                    "Total": 1
+                },
+                "State": "",
+                "Text": "task 1"
+            }
+        ],
+        "Title": "14.01 - 21.01"
+    },
+    {
+        "Description": "Burnt 1 points for task \"task 0\"",
+        "Points": {
+            "Burnt": 3,
+            "Total": 7
+        },
+        "Tasks": [
+            {
+                "ID": 0,
+                "Points": {
+                    "Burnt": 3,
+                    "Total": 6
+                },
+                "State": "",
+                "Text": "task 0"
+            },
+            {
+                "ID": 1,
+                "Points": {
+                    "Burnt": 0,
+                    "Total": 1
+                },
+                "State": "",
+                "Text": "task 1"
+            }
+        ],
+        "Title": "14.01 - 21.01"
+    },
+    {
+        "Description": "Burnt 2 points for task \"task 1\" ❗ burnt more than available and it's done!",
+        "Points": {
+            "Burnt": 5,
+            "Total": 8
+        },
+        "Tasks": [
+            {
+                "ID": 0,
+                "Points": {
+                    "Burnt": 3,
+                    "Total": 6
+                },
+                "State": "",
+                "Text": "task 0"
+            },
+            {
+                "ID": 1,
+                "Points": {
+                    "Burnt": 2,
+                    "Total": 2
+                },
+                "State": "done",
+                "Text": "task 1"
+            }
+        ],
+        "Title": "14.01 - 21.01"
+    },
+    {
+        "Description": "Burnt 3 points for task \"task 0\" and it's done!",
+        "Points": {
+            "Burnt": 8,
+            "Total": 8
+        },
+        "Tasks": [
+            {
+                "ID": 0,
+                "Points": {
+                    "Burnt": 6,
+                    "Total": 6
+                },
+                "State": "done",
+                "Text": "task 0"
+            },
+            {
+                "ID": 1,
+                "Points": {
+                    "Burnt": 2,
+                    "Total": 2
+                },
+                "State": "done",
+                "Text": "task 1"
+            }
+        ],
+        "Title": "14.01 - 21.01"
+    }
+]

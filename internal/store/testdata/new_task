@@ -1,0 +1,30 @@
+[
+    {
+        "Description": "Sprint is created",
+        "Points": {
+            "Burnt": 0,
+            "Total": 0
+        },
+        "Tasks": null,
+        "Title": "14.01 - 21.01"
+    },
+    {
+        "Description": "Task '\"new task\"' is created",
+        "Points": {
+            "Burnt": 0,
+            "Total": 10
+        },
+        "Tasks": [
+            {
+                "ID": 0,
+                "Points": {
+                    "Burnt": 0,
+                    "Total": 10
+                },
+                "State": "",
+                "Text": "new task"
+            }
+        ],
+        "Title": "14.01 - 21.01"
+    }
+]
