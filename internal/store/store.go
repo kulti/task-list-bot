@@ -63,6 +63,7 @@ func (s *Store) CreateTask(text string, points int) error {
 	}
 
 	histItem := s.dupHistoryItem()
+	histItem.Description = fmt.Sprintf("Task '%q' is created", text)
 
 	id := len(histItem.Tasks)
 	task := models.Task{ID: id, Text: text, Points: models.Points{Total: points}}
@@ -85,9 +86,41 @@ func (s *Store) DoneTask(id int) (string, error) {
 
 	histItem.Tasks = append([]models.Task{}, histItem.Tasks...)
 	task := histItem.Tasks[id]
+	histItem.Description = fmt.Sprintf("Mark task %q as done", task.Text)
 	histItem.Points.Burnt += task.Points.Total - task.Points.Burnt
 	histItem.Tasks[id].State = models.TaskStateDone
 	histItem.Tasks[id].Points.Burnt = task.Points.Total
+
+	return task.Text, s.putHistoryItem(histItem)
+}
+
+func (s *Store) BurnTaskPoints(id int, burnt int) (string, error) {
+	if err := s.init(); err != nil {
+		return "", err
+	}
+
+	histItem := s.dupHistoryItem()
+
+	if id >= len(histItem.Tasks) {
+		return "", models.ErrTaskNotFound
+	}
+
+	histItem.Tasks = append([]models.Task{}, histItem.Tasks...)
+	task := &histItem.Tasks[id]
+	histItem.Description = fmt.Sprintf("Burnt %d points for task %q", burnt, task.Text)
+	histItem.Points.Burnt += burnt
+	task.Points.Burnt += burnt
+
+	if task.Points.Burnt > task.Points.Total {
+		histItem.Points.Total += task.Points.Burnt - task.Points.Total
+		task.Points.Total = task.Points.Burnt
+		histItem.Description += " ❗ burnt more than available"
+	}
+
+	if task.Points.Burnt == task.Points.Total {
+		task.State = models.TaskStateDone
+		histItem.Description += " and it's done!"
+	}
 
 	return task.Text, s.putHistoryItem(histItem)
 }
