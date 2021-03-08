@@ -17,6 +17,7 @@ type store interface {
 	CreateNewSprint(begin, end time.Time) error
 	CreateTask(text string, points int) error
 	DoneTask(id int) (string, error)
+	BurnTaskPoints(id int, burnt int) (string, error)
 }
 
 // Processor is a telemgram message processor.
@@ -108,14 +109,36 @@ func (p *Processor) processNewSprint(logger *zap.Logger, params string) string {
 }
 
 func (p *Processor) processDoneTask(logger *zap.Logger, params string) string {
-	id, err := strconv.Atoi(params)
+	doneParams := strings.Split(params, " ")
+
+	const doneParamsCount = 2
+	if len(doneParams) > doneParamsCount {
+		return "Too much params for done command. Should be `/d id [burnt]`."
+	}
+
+	id, err := strconv.Atoi(doneParams[0])
 	if err != nil {
 		return "Task id should be a number."
 	}
 
-	task, err := p.store.DoneTask(id)
-	if err != nil {
-		return "Oops! Failed to done task. Try later."
+	var task string
+	if len(doneParams) == 1 {
+		task, err = p.store.DoneTask(id)
+		if err != nil {
+			logger.Warn("failed to done task", zap.Error(err))
+			return "Oops! Failed to done task. Try later."
+		}
+	} else {
+		burnt, err := strconv.Atoi(doneParams[1])
+		if err != nil {
+			return "Burnt points should be a number."
+		}
+
+		task, err = p.store.BurnTaskPoints(id, burnt)
+		if err != nil {
+			logger.Warn("failed to burn task points", zap.Error(err))
+			return "Oops! Failed to burn task points. Try later."
+		}
 	}
 
 	taskList := p.fullTaskList(logger)

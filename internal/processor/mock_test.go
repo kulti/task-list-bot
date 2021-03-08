@@ -91,3 +91,18 @@ func (mr *MockStoreMockRecorder) DoneTask(id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DoneTask", reflect.TypeOf((*MockStore)(nil).DoneTask), id)
 }
+
+// BurnTaskPoints mocks base method
+func (m *MockStore) BurnTaskPoints(id, burnt int) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BurnTaskPoints", id, burnt)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BurnTaskPoints indicates an expected call of BurnTaskPoints
+func (mr *MockStoreMockRecorder) BurnTaskPoints(id, burnt interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BurnTaskPoints", reflect.TypeOf((*MockStore)(nil).BurnTaskPoints), id, burnt)
+}
