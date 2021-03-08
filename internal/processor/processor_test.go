@@ -22,6 +22,7 @@ var (
 	errTestNewSprint   = errors.New("test: failed to store sprint")
 	errTestNewTask     = errors.New("test: failed to create task")
 	errTestDoneTask    = errors.New("test: failed to done task")
+	errTestBurnPoints  = errors.New("test: failed to burn task points")
 	errTestCurrentList = errors.New("test: failed to list tasks")
 )
 
@@ -140,6 +141,34 @@ func (s *ProcessorSuite) TestDoneTaskError() {
 
 	resp := s.processor.Process("/d 1")
 	s.Require().Equal("Oops! Failed to done task. Try later.", resp)
+}
+
+func (s *ProcessorSuite) TestBurnTaskPoints() {
+	id := rand.Int()
+	burnt := rand.Int()
+	task := faker.Sentence()
+	s.mockStore.EXPECT().BurnTaskPoints(id, burnt).Return(task, nil)
+	s.mockStore.EXPECT().CurrentSprint()
+
+	resp := s.processor.Process("/d " + strconv.Itoa(id) + " " + strconv.Itoa(burnt))
+	s.Require().Equal(fmt.Sprintf("The task %q is marked as done.\n\n%s", task, noSprintTemplate), resp)
+}
+
+func (s *ProcessorSuite) TestBurnTaskPointsInvalidNumber() {
+	resp := s.processor.Process("/d 0 burnt")
+	s.Require().Equal("Burnt points should be a number.", resp)
+}
+
+func (s *ProcessorSuite) TestBurnTaskPointsError() {
+	s.mockStore.EXPECT().BurnTaskPoints(gomock.Any(), gomock.Any()).Return("", errTestBurnPoints)
+
+	resp := s.processor.Process("/d 1 1")
+	s.Require().Equal("Oops! Failed to burn task points. Try later.", resp)
+}
+
+func (s *ProcessorSuite) TestDoneTooMuchParams() {
+	resp := s.processor.Process("/d id burnt extra")
+	s.Require().Equal("Too much params for done command. Should be `/d id [burnt]`.", resp)
 }
 
 func (s *ProcessorSuite) TestCurrentTaskList() {
