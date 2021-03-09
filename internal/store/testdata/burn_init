@@ -1,27 +1,25 @@
-[
-    {
-        "Description": "Init burn test",
-        "Points": {
-            "Burnt": 2,
-            "Total": 7
-        },
-        "Tasks": [
-            {
-                "ID": 0,
-                "Points": {
-                    "Burnt": 2,
-                    "Total": 6
-                },
-                "Text": "task 0"
+{
+    "Description": "Init burn test",
+    "Points": {
+        "Burnt": 2,
+        "Total": 7
+    },
+    "Tasks": [
+        {
+            "ID": 0,
+            "Points": {
+                "Burnt": 2,
+                "Total": 6
             },
-            {
-                "ID": 1,
-                "Points": {
-                    "Total": 1
-                },
-                "Text": "task 1"
-            }
-        ],
-        "Title": "14.01 - 21.01"
-    }
-]
+            "Text": "task 0"
+        },
+        {
+            "ID": 1,
+            "Points": {
+                "Total": 1
+            },
+            "Text": "task 1"
+        }
+    ],
+    "Title": "14.01 - 21.01"
+}

@@ -6,6 +6,7 @@ package store_test
 
 import (
 	gomock "github.com/golang/mock/gomock"
+	repository "github.com/kulti/task-list-bot/internal/repository"
 	reflect "reflect"
 )
 
@@ -32,18 +33,18 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 	return m.recorder
 }
 
-// InitNewSprint mocks base method
-func (m *MockRepository) InitNewSprint() error {
+// CreateNewSprint mocks base method
+func (m *MockRepository) CreateNewSprint(sprint repository.Sprint, data []byte) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "InitNewSprint")
+	ret := m.ctrl.Call(m, "CreateNewSprint", sprint, data)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// InitNewSprint indicates an expected call of InitNewSprint
-func (mr *MockRepositoryMockRecorder) InitNewSprint() *gomock.Call {
+// CreateNewSprint indicates an expected call of CreateNewSprint
+func (mr *MockRepositoryMockRecorder) CreateNewSprint(sprint, data interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitNewSprint", reflect.TypeOf((*MockRepository)(nil).InitNewSprint))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateNewSprint", reflect.TypeOf((*MockRepository)(nil).CreateNewSprint), sprint, data)
 }
 
 // CurrentSprint mocks base method

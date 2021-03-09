@@ -1,23 +1,33 @@
 package repository
 
+import (
+	"time"
+)
+
+type Sprint struct {
+	Begin, End time.Time
+}
+
 type Store struct {
-	data []byte
+	sprint Sprint
+	tasks  [][]byte
 }
 
 func New() *Store {
 	return &Store{}
 }
 
-func (s *Store) InitNewSprint() error {
-	s.data = nil
+func (s *Store) CreateNewSprint(sprint Sprint, data []byte) error {
+	s.sprint = sprint
+	s.tasks = [][]byte{data}
 	return nil
 }
 
 func (s *Store) CurrentSprint() ([]byte, error) {
-	return s.data, nil
+	return s.tasks[len(s.tasks)-1], nil
 }
 
 func (s *Store) UpdateCurrentSprint(data []byte) error {
-	s.data = data
+	s.tasks = append(s.tasks, data)
 	return nil
 }

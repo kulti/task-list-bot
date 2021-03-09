@@ -1,58 +1,28 @@
-[
-    {
-        "Description": "Init burn test",
-        "Points": {
-            "Burnt": 2,
-            "Total": 7
-        },
-        "Tasks": [
-            {
-                "ID": 0,
-                "Points": {
-                    "Burnt": 2,
-                    "Total": 6
-                },
-                "State": "",
-                "Text": "task 0"
-            },
-            {
-                "ID": 1,
-                "Points": {
-                    "Burnt": 0,
-                    "Total": 1
-                },
-                "State": "",
-                "Text": "task 1"
-            }
-        ],
-        "Title": "14.01 - 21.01"
+{
+    "Description": "Burnt 1 points for task \"task 0\"",
+    "Points": {
+        "Burnt": 3,
+        "Total": 7
     },
-    {
-        "Description": "Burnt 1 points for task \"task 0\"",
-        "Points": {
-            "Burnt": 3,
-            "Total": 7
-        },
-        "Tasks": [
-            {
-                "ID": 0,
-                "Points": {
-                    "Burnt": 3,
-                    "Total": 6
-                },
-                "State": "",
-                "Text": "task 0"
+    "Tasks": [
+        {
+            "ID": 0,
+            "Points": {
+                "Burnt": 3,
+                "Total": 6
             },
-            {
-                "ID": 1,
-                "Points": {
-                    "Burnt": 0,
-                    "Total": 1
-                },
-                "State": "",
-                "Text": "task 1"
-            }
-        ],
-        "Title": "14.01 - 21.01"
-    }
-]
+            "State": "",
+            "Text": "task 0"
+        },
+        {
+            "ID": 1,
+            "Points": {
+                "Burnt": 0,
+                "Total": 1
+            },
+            "State": "",
+            "Text": "task 1"
+        }
+    ],
+    "Title": "14.01 - 21.01"
+}
