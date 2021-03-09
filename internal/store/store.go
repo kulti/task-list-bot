@@ -6,20 +6,19 @@ import (
 	"time"
 
 	"github.com/kulti/task-list-bot/internal/models"
+	repo "github.com/kulti/task-list-bot/internal/repository"
 )
 
 type repository interface {
-	InitNewSprint() error
+	CreateNewSprint(sprint repo.Sprint, data []byte) error
 	CurrentSprint() ([]byte, error)
 	UpdateCurrentSprint(data []byte) error
 }
 
 type Store struct {
 	repo  repository
-	tasks taskListHistory
+	tasks taskListHistoryItem
 }
-
-type taskListHistory []*taskListHistoryItem
 
 type taskListHistoryItem struct {
 	Description string
@@ -37,23 +36,28 @@ func (s *Store) CurrentSprint() (models.TaskList, error) {
 		return models.TaskList{}, err
 	}
 
-	return s.tasks[len(s.tasks)-1].TaskList, nil
+	return s.tasks.TaskList, nil
 }
 
 func (s *Store) CreateNewSprint(begin, end time.Time) error {
-	s.tasks = []*taskListHistoryItem{{
+	tasks := taskListHistoryItem{
 		Description: "Sprint is created",
 		TaskList: models.TaskList{
 			Title: fmt.Sprintf("%s - %s", s.timeToSprintDate(begin), s.timeToSprintDate(end)),
 		},
-	}}
-
-	_ = s.repo.InitNewSprint()
-	if err := s.flush(); err != nil {
-		s.tasks = nil
-		return fmt.Errorf("flush task list into db: %w", err)
 	}
 
+	data, err := json.Marshal(&tasks)
+	if err != nil {
+		return fmt.Errorf("marshal tasks: %w", err)
+	}
+
+	err = s.repo.CreateNewSprint(repo.Sprint{Begin: begin, End: end}, data)
+	if err != nil {
+		return fmt.Errorf("failed to create new sprint in db: %w", err)
+	}
+
+	s.tasks = tasks
 	return nil
 }
 
@@ -70,7 +74,7 @@ func (s *Store) CreateTask(text string, points int) error {
 	histItem.Tasks = append(histItem.Tasks, task)
 	histItem.Points.Total += points
 
-	return s.putHistoryItem(histItem)
+	return s.flush(histItem)
 }
 
 func (s *Store) DoneTask(id int) (string, error) {
@@ -91,7 +95,7 @@ func (s *Store) DoneTask(id int) (string, error) {
 	histItem.Tasks[id].State = models.TaskStateDone
 	histItem.Tasks[id].Points.Burnt = task.Points.Total
 
-	return task.Text, s.putHistoryItem(histItem)
+	return task.Text, s.flush(histItem)
 }
 
 func (s *Store) BurnTaskPoints(id int, burnt int) (string, error) {
@@ -122,29 +126,19 @@ func (s *Store) BurnTaskPoints(id int, burnt int) (string, error) {
 		histItem.Description += " and it's done!"
 	}
 
-	return task.Text, s.putHistoryItem(histItem)
+	return task.Text, s.flush(histItem)
 }
 
 func (s *Store) timeToSprintDate(d time.Time) string {
 	return fmt.Sprintf("%02d.%02d", d.Day(), d.Month())
 }
 
-func (s *Store) dupHistoryItem() *taskListHistoryItem {
-	histItem := *s.tasks[len(s.tasks)-1]
-	return &histItem
-}
-
-func (s *Store) putHistoryItem(histItem *taskListHistoryItem) error {
-	s.tasks = append(s.tasks, histItem)
-	if err := s.flush(); err != nil {
-		s.tasks = s.tasks[:len(s.tasks)-1]
-		return fmt.Errorf("flush task list into db: %w", err)
-	}
-	return nil
+func (s *Store) dupHistoryItem() taskListHistoryItem {
+	return s.tasks
 }
 
 func (s *Store) init() error {
-	if len(s.tasks) != 0 {
+	if len(s.tasks.Description) != 0 {
 		return nil
 	}
 
@@ -153,20 +147,26 @@ func (s *Store) init() error {
 		return fmt.Errorf("query current sprint: %w", err)
 	}
 
-	var tasksHistory taskListHistory
-	if err := json.Unmarshal(data, &tasksHistory); err != nil {
+	var histItem taskListHistoryItem
+	if err := json.Unmarshal(data, &histItem); err != nil {
 		return fmt.Errorf("query current sprint: %w", err)
 	}
 
-	s.tasks = tasksHistory
+	s.tasks = histItem
 	return nil
 }
 
-func (s *Store) flush() error {
-	data, err := json.Marshal(&s.tasks)
+func (s *Store) flush(histItem taskListHistoryItem) error {
+	data, err := json.Marshal(&histItem)
 	if err != nil {
 		return fmt.Errorf("marshal tasks: %w", err)
 	}
 
-	return s.repo.UpdateCurrentSprint(data)
+	if err := s.repo.UpdateCurrentSprint(data); err != nil {
+		return fmt.Errorf("update tasks in db: %w", err)
+	}
+
+	s.tasks = histItem
+
+	return nil
 }

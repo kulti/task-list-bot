@@ -9,6 +9,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/suite"
 
+	repo "github.com/kulti/task-list-bot/internal/repository"
 	"github.com/kulti/task-list-bot/internal/store"
 )
 
@@ -34,8 +35,7 @@ func (s *StoreSuite) TestCreateNewSprint() {
 	begin := time.Unix(13*int64(timeDay.Seconds()), 0)
 	end := begin.Add(7 * timeDay)
 
-	s.mockRepository.EXPECT().InitNewSprint()
-	s.mockRepository.EXPECT().UpdateCurrentSprint(bytesMatcher("new_sprint"))
+	s.mockRepository.EXPECT().CreateNewSprint(repo.Sprint{Begin: begin, End: end}, bytesMatcher("new_sprint"))
 
 	s.Require().NoError(s.store.CreateNewSprint(begin, end))
 }
