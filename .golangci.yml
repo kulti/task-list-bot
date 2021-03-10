@@ -2,11 +2,81 @@ run:
   timeout: 1m
 
 linters:
-  enable-all: true
-  disable:
-    - exhaustivestruct # has a lot of false-positive, because default zero value is not bad
-    - nlreturn # not good for short functions (https://github.com/ssgreg/nlreturn/issues/6)
-    - wsl # strange suggestions for me.
+  disable-all: true
+  enable:
+    - asciicheck
+    - bodyclose
+    - cyclop
+    - deadcode
+    - depguard
+    - dogsled
+    - dupl
+    - durationcheck
+    - errcheck
+    - errorlint
+    - exhaustive
+    # - exhaustivestruct # has a lot of false-positive, because default zero value is not bad
+    - exportloopref
+    - forbidigo
+    - forcetypeassert
+    - funlen
+    - gci
+    - gochecknoglobals
+    - gochecknoinits
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - godot
+    - godox
+    - goerr113
+    - gofmt
+    - gofumpt
+    - goheader
+    - goimports
+    - golint
+    - gomnd
+    - gomodguard
+    - goprintffuncname
+    - gosec
+    - gosimple
+    - govet
+    - ifshort
+    # - interfacer # deprecated
+    - importas
+    - ineffassign
+    - lll
+    - makezero
+    # - maligned # deprecated
+    - misspell
+    - nakedret
+    - nestif
+    - nilerr
+    # - nlreturn # not good for short functions (https://github.com/ssgreg/nlreturn/issues/6)
+    - noctx
+    - nolintlint
+    - paralleltest
+    - prealloc
+    - predeclared
+    - revive
+    - rowserrcheck
+    - scopelint
+    - sqlclosecheck
+    - staticcheck
+    - structcheck
+    - stylecheck
+    - testpackage
+    - thelper
+    - tparallel
+    - typecheck
+    - unconvert
+    - unparam
+    - unused
+    - varcheck
+    - wastedassign
+    - whitespace
+    - wrapcheck
+    # - wsl # strange suggestions for me.
 
 linters-settings:
   lll:
