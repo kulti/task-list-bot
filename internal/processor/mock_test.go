@@ -6,7 +6,6 @@ package processor_test
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	models "github.com/kulti/task-list-bot/internal/models"
 	reflect "reflect"
 	time "time"
 )
@@ -34,19 +33,19 @@ func (m *MockStore) EXPECT() *MockStoreMockRecorder {
 	return m.recorder
 }
 
-// CurrentSprint mocks base method
-func (m *MockStore) CurrentSprint() (models.TaskList, error) {
+// CurrentSprintDump mocks base method
+func (m *MockStore) CurrentSprintDump() (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CurrentSprint")
-	ret0, _ := ret[0].(models.TaskList)
+	ret := m.ctrl.Call(m, "CurrentSprintDump")
+	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CurrentSprint indicates an expected call of CurrentSprint
-func (mr *MockStoreMockRecorder) CurrentSprint() *gomock.Call {
+// CurrentSprintDump indicates an expected call of CurrentSprintDump
+func (mr *MockStoreMockRecorder) CurrentSprintDump() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CurrentSprint", reflect.TypeOf((*MockStore)(nil).CurrentSprint))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CurrentSprintDump", reflect.TypeOf((*MockStore)(nil).CurrentSprintDump))
 }
 
 // CreateNewSprint mocks base method
@@ -78,12 +77,11 @@ func (mr *MockStoreMockRecorder) CreateTask(text, points interface{}) *gomock.Ca
 }
 
 // DoneTask mocks base method
-func (m *MockStore) DoneTask(id int) (string, error) {
+func (m *MockStore) DoneTask(id int) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DoneTask", id)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // DoneTask indicates an expected call of DoneTask
@@ -93,12 +91,11 @@ func (mr *MockStoreMockRecorder) DoneTask(id interface{}) *gomock.Call {
 }
 
 // BurnTaskPoints mocks base method
-func (m *MockStore) BurnTaskPoints(id, burnt int) (string, error) {
+func (m *MockStore) BurnTaskPoints(id, burnt int) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "BurnTaskPoints", id, burnt)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // BurnTaskPoints indicates an expected call of BurnTaskPoints

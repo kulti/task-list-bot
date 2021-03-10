@@ -31,14 +31,6 @@ func New(repo repository) *Store {
 	}
 }
 
-func (s *Store) CurrentSprint() (models.TaskList, error) {
-	if err := s.init(); err != nil {
-		return models.TaskList{}, err
-	}
-
-	return s.tasks.TaskList, nil
-}
-
 func (s *Store) CreateNewSprint(begin, end time.Time) error {
 	tasks := taskListHistoryItem{
 		Description: "Sprint is created",
@@ -77,15 +69,15 @@ func (s *Store) CreateTask(text string, points int) error {
 	return s.flush(histItem)
 }
 
-func (s *Store) DoneTask(id int) (string, error) {
+func (s *Store) DoneTask(id int) error {
 	if err := s.init(); err != nil {
-		return "", err
+		return err
 	}
 
 	histItem := s.dupHistoryItem()
 
 	if id >= len(histItem.Tasks) {
-		return "", models.ErrTaskNotFound
+		return models.ErrTaskNotFound
 	}
 
 	histItem.Tasks = append([]models.Task{}, histItem.Tasks...)
@@ -95,18 +87,18 @@ func (s *Store) DoneTask(id int) (string, error) {
 	histItem.Tasks[id].State = models.TaskStateDone
 	histItem.Tasks[id].Points.Burnt = task.Points.Total
 
-	return task.Text, s.flush(histItem)
+	return s.flush(histItem)
 }
 
-func (s *Store) BurnTaskPoints(id int, burnt int) (string, error) {
+func (s *Store) BurnTaskPoints(id int, burnt int) error {
 	if err := s.init(); err != nil {
-		return "", err
+		return err
 	}
 
 	histItem := s.dupHistoryItem()
 
 	if id >= len(histItem.Tasks) {
-		return "", models.ErrTaskNotFound
+		return models.ErrTaskNotFound
 	}
 
 	histItem.Tasks = append([]models.Task{}, histItem.Tasks...)
@@ -126,7 +118,7 @@ func (s *Store) BurnTaskPoints(id int, burnt int) (string, error) {
 		histItem.Description += " and it's done!"
 	}
 
-	return task.Text, s.flush(histItem)
+	return s.flush(histItem)
 }
 
 func (s *Store) timeToSprintDate(d time.Time) string {

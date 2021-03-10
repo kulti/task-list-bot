@@ -56,10 +56,7 @@ func (s *StoreSuite) TestDoneTask() {
 	s.mockRepository.EXPECT().CurrentSprint().Return(sprintData, nil)
 
 	s.mockRepository.EXPECT().UpdateCurrentSprint(bytesMatcher("done_task"))
-
-	task, err := s.store.DoneTask(0)
-	s.Require().NoError(err)
-	s.Require().Equal("new task", task)
+	s.Require().NoError(s.store.DoneTask(0))
 }
 
 func (s *StoreSuite) TestBurnPoints() {
@@ -68,19 +65,13 @@ func (s *StoreSuite) TestBurnPoints() {
 	s.mockRepository.EXPECT().CurrentSprint().Return(sprintData, nil)
 
 	s.mockRepository.EXPECT().UpdateCurrentSprint(bytesMatcher("burn_some_task_0"))
-	task0, err := s.store.BurnTaskPoints(0, 1)
-	s.Require().NoError(err)
-	s.Require().Equal("task 0", task0)
+	s.Require().NoError(s.store.BurnTaskPoints(0, 1))
 
 	s.mockRepository.EXPECT().UpdateCurrentSprint(bytesMatcher("burn_overflow_task_1"))
-	task1, err := s.store.BurnTaskPoints(1, 2)
-	s.Require().NoError(err)
-	s.Require().Equal("task 1", task1)
+	s.Require().NoError(s.store.BurnTaskPoints(1, 2))
 
 	s.mockRepository.EXPECT().UpdateCurrentSprint(bytesMatcher("burn_done_task_0"))
-	task0, err = s.store.BurnTaskPoints(0, 3)
-	s.Require().NoError(err)
-	s.Require().Equal("task 0", task0)
+	s.Require().NoError(s.store.BurnTaskPoints(0, 3))
 }
 
 func TestStore(t *testing.T) {
