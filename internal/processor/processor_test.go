@@ -12,11 +12,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/kulti/task-list-bot/internal/models"
 	"github.com/kulti/task-list-bot/internal/processor"
 )
-
-const noSprintTemplate = "no sprint"
 
 var (
 	errTestNewSprint   = errors.New("test: failed to store sprint")
@@ -53,11 +50,12 @@ func (s *ProcessorSuite) TestCreateSprint() {
 	end := begin.Add(7 * timeDay)
 
 	s.mockStore.EXPECT().CreateNewSprint(begin, end)
-	s.mockStore.EXPECT().CurrentSprint()
+	dump := faker.Sentence()
+	s.mockStore.EXPECT().CurrentSprintDump().Return(dump, nil)
 
 	sprintHeader := fmt.Sprintf("%s - %s", s.timeToSprintDate(begin), s.timeToSprintDate(end))
 	resp := s.processor.Process("/ns " + sprintHeader)
-	s.Require().Equal(noSprintTemplate, resp)
+	s.Require().Equal(dump, resp)
 }
 
 func (s *ProcessorSuite) TestCreateSprintInvalidFormat() {
@@ -87,30 +85,33 @@ func (s *ProcessorSuite) TestAddNewTask() {
 	s.Run("without points", func() {
 		msg := faker.Sentence()
 		s.mockStore.EXPECT().CreateTask(msg, 1)
-		s.mockStore.EXPECT().CurrentSprint()
+		dump := faker.Sentence()
+		s.mockStore.EXPECT().CurrentSprintDump().Return(dump, nil)
 
 		resp := s.processor.Process(msg)
-		s.Require().Equal(noSprintTemplate, resp)
+		s.Require().Equal(dump, resp)
 	})
 
 	s.Run("with points at begin", func() {
 		msg := faker.Sentence()
 		points := rand.Int()
 		s.mockStore.EXPECT().CreateTask(msg, points)
-		s.mockStore.EXPECT().CurrentSprint()
+		dump := faker.Sentence()
+		s.mockStore.EXPECT().CurrentSprintDump().Return(dump, nil)
 
 		resp := s.processor.Process(strconv.Itoa(points) + " " + msg)
-		s.Require().Equal(noSprintTemplate, resp)
+		s.Require().Equal(dump, resp)
 	})
 
 	s.Run("with points at end", func() {
 		msg := faker.Sentence()
 		points := rand.Int()
 		s.mockStore.EXPECT().CreateTask(msg, points)
-		s.mockStore.EXPECT().CurrentSprint()
+		dump := faker.Sentence()
+		s.mockStore.EXPECT().CurrentSprintDump().Return(dump, nil)
 
 		resp := s.processor.Process(msg + " " + strconv.Itoa(points))
-		s.Require().Equal(noSprintTemplate, resp)
+		s.Require().Equal(dump, resp)
 	})
 }
 
@@ -123,12 +124,12 @@ func (s *ProcessorSuite) TestAddNewTaskError() {
 
 func (s *ProcessorSuite) TestDoneTask() {
 	id := rand.Int()
-	task := faker.Sentence()
-	s.mockStore.EXPECT().DoneTask(id).Return(task, nil)
-	s.mockStore.EXPECT().CurrentSprint()
+	s.mockStore.EXPECT().DoneTask(id)
+	dump := faker.Sentence()
+	s.mockStore.EXPECT().CurrentSprintDump().Return(dump, nil)
 
 	resp := s.processor.Process("/d " + strconv.Itoa(id))
-	s.Require().Equal(fmt.Sprintf("The task %q is marked as done.\n\n%s", task, noSprintTemplate), resp)
+	s.Require().Equal(dump, resp)
 }
 
 func (s *ProcessorSuite) TestDoneTaskInvalidID() {
@@ -137,7 +138,7 @@ func (s *ProcessorSuite) TestDoneTaskInvalidID() {
 }
 
 func (s *ProcessorSuite) TestDoneTaskError() {
-	s.mockStore.EXPECT().DoneTask(gomock.Any()).Return("", errTestDoneTask)
+	s.mockStore.EXPECT().DoneTask(gomock.Any()).Return(errTestDoneTask)
 
 	resp := s.processor.Process("/d 1")
 	s.Require().Equal("Oops! Failed to done task. Try later.", resp)
@@ -146,12 +147,12 @@ func (s *ProcessorSuite) TestDoneTaskError() {
 func (s *ProcessorSuite) TestBurnTaskPoints() {
 	id := rand.Int()
 	burnt := rand.Int()
-	task := faker.Sentence()
-	s.mockStore.EXPECT().BurnTaskPoints(id, burnt).Return(task, nil)
-	s.mockStore.EXPECT().CurrentSprint()
+	s.mockStore.EXPECT().BurnTaskPoints(id, burnt)
+	dump := faker.Sentence()
+	s.mockStore.EXPECT().CurrentSprintDump().Return(dump, nil)
 
 	resp := s.processor.Process("/d " + strconv.Itoa(id) + " " + strconv.Itoa(burnt))
-	s.Require().Equal(fmt.Sprintf("The task %q is marked as done.\n\n%s", task, noSprintTemplate), resp)
+	s.Require().Equal(dump, resp)
 }
 
 func (s *ProcessorSuite) TestBurnTaskPointsInvalidNumber() {
@@ -160,7 +161,7 @@ func (s *ProcessorSuite) TestBurnTaskPointsInvalidNumber() {
 }
 
 func (s *ProcessorSuite) TestBurnTaskPointsError() {
-	s.mockStore.EXPECT().BurnTaskPoints(gomock.Any(), gomock.Any()).Return("", errTestBurnPoints)
+	s.mockStore.EXPECT().BurnTaskPoints(gomock.Any(), gomock.Any()).Return(errTestBurnPoints)
 
 	resp := s.processor.Process("/d 1 1")
 	s.Require().Equal("Oops! Failed to burn task points. Try later.", resp)
@@ -171,30 +172,9 @@ func (s *ProcessorSuite) TestDoneTooMuchParams() {
 	s.Require().Equal("Too much params for done command. Should be `/d id [burnt]`.", resp)
 }
 
-func (s *ProcessorSuite) TestCurrentTaskList() {
-	taskList := models.TaskList{
-		Title:  "test title",
-		Points: models.Points{Burnt: 2, Total: 10},
-		Tasks: []models.Task{
-			{ID: 0, Text: "task 7", Points: models.Points{Total: 7}},
-			{ID: 1, Text: "burnt task", Points: models.Points{Burnt: 2, Total: 3}},
-		},
-	}
-	s.mockStore.EXPECT().CreateNewSprint(gomock.Any(), gomock.Any())
-	s.mockStore.EXPECT().CurrentSprint().Return(taskList, nil)
-
-	resp := s.processor.Process("/ns 01.01 - 02.01")
-	s.Require().Equal(`test title
-Total (2/10)
-
-0 (0/7) task 7
-1 (2/3) burnt task
-`, resp)
-}
-
 func (s *ProcessorSuite) TestCurrentTaskListError() {
 	s.mockStore.EXPECT().CreateNewSprint(gomock.Any(), gomock.Any())
-	s.mockStore.EXPECT().CurrentSprint().Return(models.TaskList{}, errTestCurrentList)
+	s.mockStore.EXPECT().CurrentSprintDump().Return("", errTestCurrentList)
 	resp := s.processor.Process("/ns 01.01 - 02.01")
 	s.Require().Equal("Oops! Failed to load current task list. Try later.", resp)
 }
